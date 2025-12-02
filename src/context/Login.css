@@ -1,0 +1,612 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #F5F5F5 0%, #e8e8e8 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Montserrat', 'Open Sans', sans-serif;
+}
+
+.login-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.floating-shape {
+  position: absolute;
+  background: rgba(255, 107, 107, 0.06);
+  border-radius: 50%;
+  backdrop-filter: blur(5px);
+}
+
+.floating-shape:nth-child(1) { width: 50px; height: 50px; top: 20%; left: 15%; }
+.floating-shape:nth-child(2) { width: 80px; height: 80px; top: 30%; right: 10%; }
+.floating-shape:nth-child(3) { width: 35px; height: 35px; bottom: 40%; left: 20%; }
+.floating-shape:nth-child(4) { width: 65px; height: 65px; bottom: 30%; right: 25%; }
+.floating-shape:nth-child(5) { width: 45px; height: 45px; top: 50%; left: 10%; }
+.floating-shape:nth-child(6) { width: 70px; height: 70px; top: 70%; right: 15%; }
+
+.thread-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.1;
+}
+
+.thread-line {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.thread-dot {
+  width: 8px;
+  height: 8px;
+  background: #FF6B6B;
+  border-radius: 50%;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 
+    0 20px 40px rgba(30, 30, 47, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.8);
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(20px);
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.thread-logo {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thread-icon {
+  position: relative;
+}
+
+.thread-line-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.thread-line-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #1E1E2F;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.thread-dot-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FF6B6B;
+  position: relative;
+  z-index: 1;
+}
+
+.app-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #1E1E2F;
+  margin: 0;
+}
+
+.app-tagline {
+  font-family: 'Open Sans', sans-serif;
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+.login-form,
+.forgot-password-form,
+.otp-form,
+.reset-password-form {
+  text-align: center;
+}
+
+.login-form h2,
+.forgot-password-form h2,
+.otp-form h2,
+.reset-password-form h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #1E1E2F;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.form-subtitle {
+  font-family: 'Open Sans', sans-serif;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+}
+
+.error-message {
+  background: #FFF5F5;
+  color: #ff4757;
+  padding: 12px;
+  border-radius: 10px;
+  border-left: 4px solid #ff4757;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  color: #1E1E2F;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(245, 245, 245, 0.8);
+  color: #333333;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #FF6B6B;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.15);
+}
+
+.form-group input.error {
+  border-color: #ff4757;
+  background: #FFF5F5;
+}
+
+.error-text {
+  color: #ff4757;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
+  font-weight: 500;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  padding-right: 60px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.password-toggle:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.login-btn,
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.login-btn:disabled,
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.form-links {
+  margin-top: 20px;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #FF6B6B;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.forgot-password-link:hover {
+  color: #ff5252;
+}
+
+.back-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  border-color: #1E1E2F;
+  color: #1E1E2F;
+}
+
+.otp-note {
+  background: rgba(255, 107, 107, 0.1);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  border-left: 4px solid #FF6B6B;
+  font-size: 0.9rem;
+}
+
+.otp-code {
+  background: #1E1E2F;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.success-view {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.success-view h2 {
+  font-family: 'Montserrat', sans-serif;
+  color: #1E1E2F;
+  margin-bottom: 15px;
+}
+
+.success-view p {
+  color: #666;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.login-success-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 30, 47, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  z-index: 10;
+}
+
+.success-animation {
+  text-align: center;
+  color: white;
+  padding: 40px;
+}
+
+.success-check {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  background: #4CAF50;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.success-animation h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.success-animation p {
+  font-family: 'Open Sans', sans-serif;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.loading-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #FF6B6B, #4CAF50);
+  border-radius: 2px;
+  margin-top: 20px;
+}
+
+.register-prompt {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.register-prompt p {
+  color: #666;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.register-redirect-btn {
+  background: transparent;
+  color: #1E1E2F;
+  border: 2px solid #1E1E2F;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  font-family: 'Montserrat', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 30px 20px;
+    margin: 20px;
+    border-radius: 20px;
+  }
+  
+  .app-name {
+    font-size: 1.6rem;
+  }
+  
+  .logo-container {
+    gap: 12px;
+  }
+  
+  .thread-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .thread-dot-icon {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 10px;
+  }
+  
+  .app-name {
+    font-size: 1.4rem;
+  }
+  
+  .login-form h2,
+  .forgot-password-form h2,
+  .otp-form h2,
+  .reset-password-form h2 {
+    font-size: 1.5rem;
+  }
+  
+  .floating-shapes {
+    display: none;
+  }
+}
+/* Enhanced Success Animation Styles */
+.login-success-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 20px;
+}
+
+.success-animation {
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-spinner-large {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+
+.spinner-ring {
+  width: 100%;
+  height: 100%;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #FF6B6B;
+  border-radius: 50%;
+}
+
+.success-check-large {
+  font-size: 4rem;
+  color: #4CAF50;
+  margin: 0 auto 2rem;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fff8;
+  border-radius: 50%;
+  border: 3px solid #4CAF50;
+}
+
+.progress-container {
+  width: 100%;
+  background: #f0f0f0;
+  border-radius: 10px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 8px;
+  background: linear-gradient(90deg, #FF6B6B, #4CAF50);
+  border-radius: 10px;
+  transition: width 0.1s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.countdown-timer {
+  font-size: 0.875rem;
+  color: #888;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+/* Button Loading States */
+.button-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+}
+/* ================================
+   UPGRADED SPIN ANIMATIONS
+================================ */
+
+/* Smooth 360° spin with easing */
+@keyframes spinSmooth {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(200deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Fast continuous spin */
+@keyframes spinFast {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Upgraded loading ring */
+.spinner-ring {
+  animation: spinSmooth 1s linear infinite;
+  transform-origin: center;
+}
+
+/* Button spinner */
+.spinner {
+  animation: spinFast 0.6s linear infinite;
+}
+
+/* Large spinner */
+.loading-spinner-large .spinner-ring {
+  animation: spinSmooth 0.9s ease-in-out infinite;
+}

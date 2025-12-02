@@ -1,0 +1,24 @@
+.logout-btn {
+  position: fixed;
+  
+  bottom: 90px; 
+  left: 20px;  /* keep it at the right end */
+  background: #1E1E2F;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1100; /* ensure it floats above navbar */
+}
+
+.logout-btn:hover {
+  background: #FF6B6B;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+}
