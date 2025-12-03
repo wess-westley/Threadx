@@ -32,10 +32,15 @@ export function AuthProvider({ children }) {
   };
 
   // ---------- LOGIN ----------
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
     try {
-      if (!email || !password) return { success: false, error: 'Email and password are required' };
+      if (!identifier || !password) {
+        return { success: false, error: 'Email/Username and password are required' };
+      }
 
+      console.log('🔍 Searching for user:', identifier);
+
+      // Demo users for testing
       const demoUsers = {
         'demo@threadx.com': {
           id: 1,
@@ -54,12 +59,31 @@ export function AuthProvider({ children }) {
           bio: 'Developer building amazing features for ThreadX!',
           joinDate: new Date().toISOString(),
           location: 'Nairobi',
+        },
+        'demo_user': { // Also allow username login
+          id: 1,
+          username: 'demo_user',
+          email: 'demo@threadx.com',
+          avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=FF6B6B&color=fff',
+          bio: 'ThreadX demo user exploring the platform!',
+          joinDate: new Date().toISOString(),
+          location: 'Kerugoya',
+        },
+        'threadx_dev': { // Also allow username login
+          id: 2,
+          username: 'threadx_dev',
+          email: 'dev@threadx.com',
+          avatar: 'https://ui-avatars.com/api/?name=ThreadX+Dev&background=1E1E2F&color=fff',
+          bio: 'Developer building amazing features for ThreadX!',
+          joinDate: new Date().toISOString(),
+          location: 'Nairobi',
         }
       };
 
       // Check if user is a demo user
-      if (demoUsers[email] && password === 'password123') {
-        const demoUser = demoUsers[email];
+      if (demoUsers[identifier] && password === 'password123') {
+        const demoUser = demoUsers[identifier];
+        console.log('✅ Demo user login successful');
         setUser(demoUser);
         localStorage.setItem('threadx_user', JSON.stringify(demoUser));
         localStorage.setItem('threadx_token', 'mock_jwt_token');
@@ -73,66 +97,57 @@ export function AuthProvider({ children }) {
 
       // Check registered users
       const existingUsers = JSON.parse(localStorage.getItem('threadx_users') || '[]');
-      const foundUser = existingUsers.find(u => u.email === email);
+      const foundUser = existingUsers.find(u => 
+        u.email === identifier || u.username === identifier
+      );
 
       if (foundUser) {
+        console.log('🔍 Found registered user:', foundUser.username);
         const storedPassword = localStorage.getItem(`password_${foundUser.id}`);
         const hashedPassword = hashPassword(password);
 
         if (storedPassword && hashedPassword === storedPassword) {
+          console.log('✅ Password matches!');
           setUser(foundUser);
           localStorage.setItem('threadx_user', JSON.stringify(foundUser));
           localStorage.setItem('threadx_token', 'mock_jwt_token');
           return { success: true };
         } else {
-          return { success: false, error: 'Invalid email or password' };
+          console.log('❌ Password does not match');
+          return { success: false, error: 'Invalid email/username or password' };
         }
       }
 
-      if (password.length < 6) return { success: false, error: 'Password must be at least 6 characters long' };
-
-      // Create new user
-      const mockUser = {
-        id: Date.now(),
-        username: email.split('@')[0],
-        email,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=FF6B6B&color=fff`,
-        bio: 'ThreadX enthusiast sharing thoughts and ideas!',
-        joinDate: new Date().toISOString(),
-        location: '',
-      };
-
-      existingUsers.push(mockUser);
-      localStorage.setItem('threadx_users', JSON.stringify(existingUsers));
+      console.log('❌ User not found');
+      return { success: false, error: 'User not found. Please register first.' };
       
-      // Store the hashed password
-      const hashedPassword = hashPassword(password);
-      localStorage.setItem(`password_${mockUser.id}`, hashedPassword);
-
-      setUser(mockUser);
-      localStorage.setItem('threadx_user', JSON.stringify(mockUser));
-      localStorage.setItem('threadx_token', 'mock_jwt_token');
-
-      return { success: true };
     } catch (error) {
-      console.error("Login error:", error);
-      return { success: false, error: 'Invalid credentials' };
+      console.error("❌ Login error:", error);
+      return { success: false, error: 'Login failed. Please try again.' };
     }
   };
 
   // ---------- REGISTER ----------
   const register = async (username, email, password, location = '') => {
     try {
-      if (!username || !email || !password) return { success: false, error: 'All fields are required' };
-      if (username.length < 3) return { success: false, error: 'Username must be at least 3 characters long' };
-      if (password.length < 6) return { success: false, error: 'Password must be at least 6 characters long' };
+      if (!username || !email || !password) {
+        return { success: false, error: 'All fields are required' };
+      }
+      if (username.length < 3) {
+        return { success: false, error: 'Username must be at least 3 characters long' };
+      }
+      if (password.length < 6) {
+        return { success: false, error: 'Password must be at least 6 characters long' };
+      }
 
       const existingUsers = JSON.parse(localStorage.getItem('threadx_users') || '[]');
 
       const userExists = existingUsers.some(
         user => user.username === username || user.email === email
       );
-      if (userExists) return { success: false, error: 'Username or email already exists' };
+      if (userExists) {
+        return { success: false, error: 'Username or email already exists' };
+      }
 
       const newUser = {
         id: Date.now(),
