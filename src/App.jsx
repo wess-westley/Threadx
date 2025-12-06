@@ -22,14 +22,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
-  // Initialize theme from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('threadx_theme') || 'light';
     setDarkMode(savedTheme === 'dark');
     applyTheme(savedTheme);
   }, []);
 
-  // Listen for theme changes from Settings component
   useEffect(() => {
     const handleThemeChange = (e) => {
       setDarkMode(e.detail.darkMode);
@@ -40,7 +38,6 @@ function App() {
     return () => window.removeEventListener('themeChange', handleThemeChange);
   }, []);
 
-  // Apply theme to document
   const applyTheme = (theme) => {
     const root = document.documentElement;
     const isDark = theme === 'dark';
@@ -102,58 +99,40 @@ function AppContent() {
 
   return (
     <div className="app-layout">
+      {/* ✅ Header always visible */}
+      <Header />
+
       <Routes>
         {/* Auth Routes */}
         <Route 
           path="/login" 
-          element={!user ? <Login /> : <Navigate to="/" />} 
+          element={!user ? <Login /> : <Navigate to="/" replace />} 
         />
         <Route 
           path="/register" 
-          element={!user ? <Register /> : <Navigate to="/" />} 
+          element={!user ? <Register /> : <Navigate to="/" replace />} 
         />
-        
+
         {/* Protected Routes */}
-        <Route 
-          path="/*" 
-          element={user ? <AuthenticatedLayout /> : <PublicLayout />} 
-        />
+        {user ? (
+          <>
+            <Route path="/" element={<Timeline />} />
+            <Route path="/new" element={<NewThread />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/alert" element={<Alert />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<Timeline />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </>
+        )}
       </Routes>
-    </div>
-  );
-}
 
-// Layout for authenticated users
-function AuthenticatedLayout() {
-  return (
-    <div className="authenticated-layout">
-      <Header />
-      <div className="main-content-wrapper">
-        <Routes>
-          <Route path="/" element={<Timeline />} />
-          <Route path="/new" element={<NewThread />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/alert" element={<Alert />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-      <Navbar />
-    </div>
-  );
-}
-
-// Layout for unauthenticated users
-function PublicLayout() {
-  return (
-    <div className="public-layout">
-      <Header />
-      <div className="main-content-wrapper">
-        <Routes>
-          <Route path="/" element={<Timeline />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
+      {/* ✅ Navbar only for authenticated users */}
+      {user && <Navbar />}
     </div>
   );
 }

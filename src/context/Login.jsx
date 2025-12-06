@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CryptoJS from 'crypto-js';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import './Login.css';
@@ -10,9 +9,9 @@ import './Login.css';
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const timeoutsRef = useRef([]);
+  const timersRef = useRef([]); // store both timeouts and intervals
 
-  const [currentView, setCurrentView] = useState('login'); 
+  const [currentView, setCurrentView] = useState('login');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -30,11 +29,21 @@ const Login = () => {
   const [showTick, setShowTick] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
 
+  // OTP constant for development/testing
   const FIXED_OTP = '123456';
 
   useEffect(() => {
+    // cleanup on unmount
     return () => {
-      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      timersRef.current.forEach(id => {
+        try {
+          clearTimeout(id);
+          clearInterval(id);
+        } catch (e) {
+          // ignore
+        }
+      });
+      timersRef.current = [];
     };
   }, []);
 
@@ -44,15 +53,11 @@ const Login = () => {
     exit: { x: -300, opacity: 0 }
   };
 
-  const hashPassword = (password) => CryptoJS.SHA256(password).toString();
-
+  // ---- Input handlers & validators ----
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateLogin = () => {
@@ -92,9 +97,10 @@ const Login = () => {
       newErrors.confirmNewPassword = 'Passwords do not match';
     }
 
+    // Check against existing saved plain-text password (no hashing)
     const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     const user = users.find(u => u.email === userEmail);
-    if (user && hashPassword(formData.newPassword) === user.password) {
+    if (user && user.password === formData.newPassword) {
       newErrors.newPassword = 'New password cannot be the same as old password';
     }
 
@@ -102,74 +108,65 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ---- Animation / overlay logic (fixed timing + cleanup) ----
   const startLoginAnimation = () => {
-    console.log('🚀 SHOWING OVERLAY');
-    
-    // Immediately show overlay
+    // show overlay and start a timed progress to 100% in 10s
     setShowOverlay(true);
     setProgress(0);
     setShowTick(false);
 
-    // Small delay to ensure overlay renders before starting animation
-    const renderDelay = setTimeout(() => {
-      console.log('✅ Overlay should be visible now');
-      
-      let step = 0;
-      const progressInterval = setInterval(() => {
-        step++;
-        console.log('📊 Progress:', step);
-        setProgress(step);
+    const start = Date.now();
+    const durationMs = 10000; // 10 seconds to reach 100%
 
-        if (step >= 100) {
-          clearInterval(progressInterval);
-        }
-      }, 100);
+    // interval updates progress every 100ms
+    const intervalId = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const pct = Math.min(100, Math.round((elapsed / durationMs) * 100));
+      setProgress(pct);
 
-      const tickTimeout = setTimeout(() => {
-        console.log('✅ SHOWING CHECKMARK');
-        setShowTick(true);
-      }, 8000);
-      timeoutsRef.current.push(tickTimeout);
+      // when reached 100, show tick and schedule redirect
+      if (pct >= 100) {
+        clearInterval(intervalId);
+        // show checkmark a little after reaching 100%
+        const tickTimeout = setTimeout(() => {
+          setShowTick(true);
+        }, 300);
+        timersRef.current.push(tickTimeout);
 
-      const redirectTimeout = setTimeout(() => {
-        console.log('➡️ REDIRECTING TO HOME');
-        clearInterval(progressInterval);
-        navigate('/');
-      }, 10000);
-      timeoutsRef.current.push(redirectTimeout);
-    }, 50); // 50ms delay to let React render the overlay
-    
-    timeoutsRef.current.push(renderDelay);
+        // navigate after short pause (give user the tick)
+        const redirectTimeout = setTimeout(() => {
+          setShowOverlay(false);
+          navigate('/');
+        }, 1300);
+        timersRef.current.push(redirectTimeout);
+      }
+    }, 100);
+
+    timersRef.current.push(intervalId);
   };
 
+  // ---- Action handlers ----
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (!validateLogin()) {
-      return;
-    }
+    if (!validateLogin()) return;
 
     setIsLoading(true);
-    console.log('🔄 Login attempt with:', formData.username);
 
     try {
+      // login function from context; expected to accept plain-text password
       const result = await login(formData.username, formData.password);
-      
-      console.log('📡 Login result:', result);
 
       if (result && result.success === true) {
-        console.log('✅ LOGIN SUCCESSFUL - STARTING ANIMATION');
         setIsLoading(false);
         startLoginAnimation();
       } else {
-        console.log('❌ LOGIN FAILED');
         setIsLoading(false);
         setErrors({ general: result?.error || 'Invalid username or password' });
       }
     } catch (err) {
-      console.error('❌ Login error:', err);
       setIsLoading(false);
       setErrors({ general: 'Something went wrong. Please try again.' });
+      console.error('Login error', err);
     }
   };
 
@@ -183,7 +180,8 @@ const Login = () => {
     if (user) {
       setUserEmail(user.email);
       setCurrentView('forgot-password');
-      console.log(`OTP sent to ${user.email}: ${FIXED_OTP}`);
+      // For dev/testing we show the OTP. In production, you'd send an email.
+      console.info(`OTP for ${user.email}: ${FIXED_OTP}`);
       alert(`OTP sent to your email: ${FIXED_OTP}`);
     } else {
       setErrors({ username: 'Username not found' });
@@ -203,71 +201,76 @@ const Login = () => {
     if (!validateResetPassword()) return;
 
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 900));
+
+    // simulate small server delay
+    await new Promise(r => setTimeout(r, 700));
 
     const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const hashedNewPassword = hashPassword(formData.newPassword);
 
+    // Save plain-text new password (per request)
     const updatedUsers = users.map(u =>
-      u.email === userEmail ? { ...u, password: hashedNewPassword } : u
+      u.email === userEmail ? { ...u, password: formData.newPassword } : u
     );
-
     localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
 
+    // also update currentUser if matches
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (currentUser.email === userEmail) {
-      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, password: hashedNewPassword }));
+    if (currentUser && currentUser.email === userEmail) {
+      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, password: formData.newPassword }));
     }
 
     setIsLoading(false);
     setCurrentView('success');
 
+    // return to login after a short delay
     const successTimeout = setTimeout(() => {
       setCurrentView('login');
       setFormData(prev => ({ ...prev, password: '', newPassword: '', confirmNewPassword: '' }));
       setErrors({});
-    }, 2500);
-    timeoutsRef.current.push(successTimeout);
+    }, 2000);
+    timersRef.current.push(successTimeout);
   };
 
   const handleRegisterRedirect = () => {
     navigate('/register');
   };
 
+  // ---- small UI toggles ----
   const togglePasswordVisibility = () => setShowPassword(v => !v);
   const toggleNewPasswordVisibility = () => setShowNewPassword(v => !v);
   const toggleConfirmNewPasswordVisibility = () => setShowConfirmNewPassword(v => !v);
 
+  // ---- render ----
   return (
     <>
-      {/* OVERLAY - RENDERED AT ROOT LEVEL */}
+      {/* OVERLAY */}
       {showOverlay && (
         <div className="threadx-login-overlay-root">
           <div className="threadx-overlay-content">
             {!showTick ? (
-              <div className="threadx-spinner">
-                <div className="threadx-spinner-ring"></div>
+              <div className="threadx-spinner" aria-hidden>
+                <div className="threadx-spinner-ring" />
               </div>
             ) : (
-              <div className="threadx-checkmark">✓</div>
+              <div className="threadx-checkmark" aria-hidden>✓</div>
             )}
 
             <h3>{showTick ? 'Welcome to ThreadX!' : 'Preparing Your Experience...'}</h3>
             <p>{showTick ? 'Redirecting to your feed...' : 'Loading your personalized timeline...'}</p>
 
-            <div className="threadx-progress-wrapper">
-              <div className="threadx-progress-bar" style={{ width: `${progress}%` }}></div>
+            <div className="threadx-progress-wrapper" aria-hidden>
+              <div className="threadx-progress-bar" style={{ width: `${progress}%` }} />
               <div className="threadx-progress-text">{progress}% Complete</div>
             </div>
 
             <div className="threadx-countdown">
-              {showTick ? 'Redirecting...' : `Loading... ${Math.ceil((10000 - progress * 100) / 1000)}s`}
+              {showTick ? 'Redirecting...' : `Loading... ${Math.ceil((10000 - (progress / 100) * 10000) / 1000)}s`}
             </div>
           </div>
         </div>
       )}
 
-      {/* MAIN LOGIN CONTAINER */}
+      {/* MAIN LOGIN */}
       <div className="login-container">
         <motion.div
           className="login-background"
@@ -341,7 +344,7 @@ const Login = () => {
                       placeholder="Enter your password"
                       className={errors.password ? 'error' : ''}
                     />
-                    <button type="button" className="password-toggle" onClick={togglePasswordVisibility}>
+                    <button type="button" className="password-toggle" onClick={togglePasswordVisibility} aria-label="Toggle password visibility">
                       {showPassword ? '🙈' : '👁️'}
                     </button>
                   </div>
